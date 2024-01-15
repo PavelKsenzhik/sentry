@@ -7,8 +7,13 @@ from flask import Flask
 
 app = Flask(__name__)
 
-cars_list = ['Chevrolet', 'Renault', 'Ford', 'Lada']
-cats_list = ['корниш-рекс', 'русская голубая', 'шотландская вислоухая', 'мейн-кун', 'манчкин']
+CARS_LIST = ['Chevrolet', 'Renault', 'Ford', 'Lada']
+CATS_LIST = ['корниш-рекс', 'русская голубая', 'шотландская вислоухая', 'мейн-кун', 'манчкин']
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+BOOK_FILE = os.path.join(BASE_DIR, 'war_and_peace.txt')
+
+counter_integer = 0
+war_and_peace_book = ''
 
 
 @app.route('/hello_world')
@@ -18,12 +23,12 @@ def hello_world():
 
 @app.route('/cars')
 def cars():
-    return ', '.join(cars_list)
+    return ', '.join(CARS_LIST)
 
 
 @app.route('/cats')
 def cats():
-    return random.choice(cats_list)
+    return random.choice(CATS_LIST)
 
 
 @app.route('/get_time/now')
@@ -31,9 +36,7 @@ def time_now():
     time = datetime.datetime.now()
     current_time = time.strftime("%H.%M.%S")
 
-    return "Точное время: {current_time}".format(
-        current_time=current_time
-    )
+    return f"Точное время: {current_time}"
 
 
 @app.route('/get_time/future')
@@ -41,19 +44,22 @@ def get_time_future():
     datetime_after_hour = datetime.datetime.now() + datetime.timedelta(hours=1)
     time_after_hour = datetime_after_hour.strftime("%H.%M.%S")
 
-    return "Точное время через час будет {current_time_after_hour}".format(
-        current_time_after_hour=time_after_hour
-    )
+    return f"Точное время через час будет {time_after_hour}"
+
+
+def get_book_words(book):
+    return re.findall('\w+', book)
 
 
 @app.route('/get_random_word')
 def get_random_word():
-    BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-    BOOK_FILE = os.path.join(BASE_DIR, 'war_and_peace.txt')
+    global war_and_peace_book
 
-    with open(BOOK_FILE, 'r', encoding='utf-8') as book:
-        text = book.read()
-        words = re.findall('\w+', text)
+    if war_and_peace_book == '':
+        with open(BOOK_FILE, 'r', encoding='utf-8') as book:
+            war_and_peace_book = book.read()
+
+    words = get_book_words(war_and_peace_book)
 
     return random.choice(words)
 
@@ -64,9 +70,6 @@ def counter():
 
     counter_integer += 1
     return str(counter_integer)
-
-
-counter_integer = 0
 
 
 if __name__ == '__main__':
