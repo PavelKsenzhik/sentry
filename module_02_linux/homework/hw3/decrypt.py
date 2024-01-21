@@ -6,9 +6,11 @@ def decrypt(encryption: str) -> str:
     regx = '\S\.{2}'
 
     while re.search(regx, encryption):
-        encryption = re.sub(regx, '', encryption)
+        encryption = re.sub(regx,'', encryption, 1)
+
         if encryption == '':
             return ''
+
     encryption = encryption.split('.')
     return ''.join(encryption)
 
