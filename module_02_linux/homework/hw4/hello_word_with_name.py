@@ -17,7 +17,7 @@ WEEKDAYS_TUPLE = ('понедельника', 'вторника', 'среды', 
 @app.route('/hello-world/<username>')
 def hello_world(username):
     weekday = datetime.today().weekday()
-    if weekday == 2 or weekday == 4 or weekday == 5:
+    if weekday in (2, 4, 5):
         wish_end = 'й'
     else:
         wish_end = 'го'

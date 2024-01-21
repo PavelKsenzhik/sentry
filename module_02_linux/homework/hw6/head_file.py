@@ -45,7 +45,7 @@ def head_file(size: int, relative_path: str):
             text = file.read(size)
     except FileNotFoundError:
         return 'Файл не найден'
-    return f'{file_path} {len(text)}<br> {text}'
+    return f'<b>{file_path}</b> {len(text)}<br> {text}'
 
 
 if __name__ == "__main__":

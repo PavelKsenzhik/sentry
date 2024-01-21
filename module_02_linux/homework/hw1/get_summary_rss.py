@@ -18,6 +18,7 @@ def get_summary_rss(ps_output_file_path: str) -> str:
         1: 'Кб',
         2: 'Мб;',
         3: 'Гб',
+        4: 'Тб',
     }
     while memory_sum > 1024:
         memory_sum /= 1024
