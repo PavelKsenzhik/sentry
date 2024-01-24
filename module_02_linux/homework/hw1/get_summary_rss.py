@@ -20,9 +20,15 @@ def get_summary_rss(ps_output_file_path: str) -> str:
         3: 'Гб',
         4: 'Тб',
     }
+
     while memory_sum > 1024:
-        memory_sum /= 1024
         size_key += 1
+
+        if size_key not in size_labels:
+            return f"Объём памяти {round(memory_sum, 2)} {size_labels[size_key -1 ]}"
+            break
+
+        memory_sum /= 1024
     return f"Объём памяти {round(memory_sum, 2)} {size_labels[size_key]}"
 
 
