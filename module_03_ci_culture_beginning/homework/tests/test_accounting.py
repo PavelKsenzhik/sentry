@@ -1,6 +1,6 @@
 import json
 from unittest import TestCase
-from module_03_ci_culture_beginning.homework.hw3.accounting import app
+from module_03_ci_culture_beginning.homework.hw3.accounting import app, storage
 
 
 class TestAccounting(TestCase):
@@ -20,55 +20,49 @@ class TestAccounting(TestCase):
         url = f'{self.add_url}{date}/{number}'
         return self.app.get(url)
 
-    def get_storage(self):
-        return json.loads(self.app.get('/get-storage').data)
-
-    def is_added_to_storage(self, date):
-        year = str(int(date[:4]))
-        month = str(int(date[4:6]))
-        day = str(int(date[6:8]))
-
-        storage = self.get_storage()
-
-        if storage.get(year).get(month).get(day):
-            return True
-        else:
-            return False
-
     def test_correct_add_endpoint(self):
         date = self.date
+        year = int(date[:4])
+        month = int(date[4:6])
+        day = int(date[6:8])
+        expected_value = self.sum
 
-        self.add_data(date, self.sum)
-        result = self.is_added_to_storage(date)
+        response = self.add_data(date, self.sum)
+        response_text = response.data.decode()
 
-        self.assertTrue(result)
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response_text, f'Текущее состояние {storage}')
+        self.assertEqual(expected_value, storage[year][month][day])
+        storage.clear()
 
     def test_invalid_date_add_endpoint(self):
-        date = '20240123'
-        try:
+        date = '20240d601'
+        with self.assertRaises(ValueError):
             self.add_data(date, self.sum)
-        except ValueError:
-            self.assertRaises(ValueError)
 
     def test_correct_calculate_year(self):
-        year = self.year
-        response = self.app.get(self.calculate_url + year)
+        self.add_data(self.date, self.sum)
+
+        response = self.app.get(self.calculate_url + self.year)
         response_text = response.data.decode()
 
-        self.assertIn(f'{year} год: {self.sum}', response_text)
+        self.assertEqual(response.status_code, 200)
+        self.assertIn(f'{self.year} год: {self.sum}', response_text)
+        storage.clear()
 
     def test_correct_calculate_year_month(self):
-        year = self.year
-        month = self.month
+        self.add_data(self.date, self.sum)
 
-        response = self.app.get(self.calculate_url + year + '/' + month)
+        response = self.app.get(self.calculate_url + self.year + '/' + self.month)
         response_text = response.data.decode()
 
-        self.assertIn(f'{year} год {int(month)} месяц: {self.sum}', response_text)
+        self.assertEqual(response.status_code, 200)
+        self.assertIn(f'{self.year} год {int(self.month)} месяц: {self.sum}', response_text)
 
     def test_correct_empty_storage_calculate_endpoint(self):
         year = '2023'
         response = self.app.get(self.calculate_url + year)
         response_text = response.data.decode()
 
+        self.assertEqual(response.status_code, 200)
         self.assertIn(f'Данные за {year} год отсутствуют', response_text)

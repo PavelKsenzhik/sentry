@@ -17,13 +17,20 @@ class TestHelloWorld(TestCase):
         response_text = response.data.decode()
         self.assertTrue(username in response_text)
 
-    @freeze_time('2024-01-24')
     def test_can_get_correct_weekdate(self):
         username = 'Pavel'
-        weekday = datetime.today().weekday()
-        greeting = GREETINGS[weekday]
-        test_str = f'Привет, {username}. {greeting}!'
+        freeze_times = [datetime(2024, 1, day) for day in range(1, 8)]
 
-        response = self.app.get(self.base_url + username)
-        response_text = response.data.decode()
-        self.assertEqual(test_str, response_text)
+        for time in freeze_times:
+            with freeze_time(time):
+                weekday = datetime.today().weekday()
+                greeting = GREETINGS[weekday]
+                test_str = f'Привет, {username}. {greeting}!'
+
+                response = self.app.get(self.base_url + username)
+                response_text = response.data.decode()
+
+                self.assertEqual(test_str, response_text)
+
+
+
