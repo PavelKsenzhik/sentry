@@ -31,5 +31,22 @@ def index():
     return 'Главная страница'
 
 
+def has_no_empty_params(rule):
+    defaults = rule.defaults if rule.defaults is not None else ()
+    arguments = rule.arguments if rule.arguments is not None else ()
+    return len(defaults) >= len(arguments)
+
+
+@app.errorhandler(404)
+def handle_exception(e: 404):
+    urls = []
+    for rule in app.url_map.iter_rules():
+        if "GET" in rule.methods and has_no_empty_params(rule):
+            url = "http://localhost:5000" + str(rule.rule)
+            urls.append(f"<a href='{rule.rule}'>{url}</a>")
+    return f"Данная страница не найдена. Вы можете перейти по следующим ссылкам:<br>" \
+           f"{'<br>'.join(urls)}", 404
+
+
 if __name__ == '__main__':
     app.run(debug=True)

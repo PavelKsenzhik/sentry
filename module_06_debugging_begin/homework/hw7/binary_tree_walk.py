@@ -18,6 +18,7 @@ def restore_tree(path_to_log_file: str) -> BinaryTreeNode:
 import itertools
 import logging
 import random
+import re
 from collections import deque
 from dataclasses import dataclass
 from typing import Optional
@@ -71,7 +72,46 @@ def get_tree(max_depth: int, level: int = 1) -> Optional[BinaryTreeNode]:
 
 
 def restore_tree(path_to_log_file: str) -> BinaryTreeNode:
-    pass
+    node_dict = {}
+
+    with open(path_to_log_file, 'r') as log_file:
+        for line in log_file:
+            log_entry = line.strip().split(':')
+            log_type = log_entry[0]
+            log_message = log_entry[1]
+
+            if log_type == "INFO":
+                node_num = int(re.findall(r"<BinaryTreeNode\[(\d+)\]>", log_message)[0])
+                if not node_dict.get(node_num):
+                    node_dict[node_num] = BinaryTreeNode(node_num)
+
+            elif log_type == "DEBUG" and "left" in log_message:
+                node_nums = re.findall(r"<BinaryTreeNode\[(\d+)\]>", log_message)
+                node_num_parent = int(node_nums[0])
+                node_num_left = int(node_nums[1])
+
+                if not node_dict.get(node_num_parent):
+                    node_dict[node_num_parent] = BinaryTreeNode(node_num_parent)
+
+                if not node_dict.get(node_num_left):
+                    node_dict[node_num_left] = BinaryTreeNode(node_num_left)
+
+                node_dict[node_num_parent].left = node_dict[node_num_left]
+
+            elif log_type == "DEBUG" and "right" in log_message:
+                node_nums = re.findall(r"<BinaryTreeNode\[(\d+)\]>", log_message)
+                node_num_parent = int(node_nums[0])
+                node_num_right = int(node_nums[1])
+
+                if not node_dict.get(node_num_parent):
+                    node_dict[node_num_parent] = BinaryTreeNode(node_num_parent)
+
+                if not node_dict.get(node_num_right):
+                    node_dict[node_num_right] = BinaryTreeNode(node_num_right)
+
+                node_dict[node_num_parent].right = node_dict[node_num_right]
+
+    return list(node_dict.items())[0]
 
 
 if __name__ == "__main__":
@@ -83,3 +123,5 @@ if __name__ == "__main__":
 
     root = get_tree(7)
     walk(root)
+
+    print(restore_tree('walk_log_4.txt'))
