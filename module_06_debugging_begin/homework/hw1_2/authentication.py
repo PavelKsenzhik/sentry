@@ -18,12 +18,43 @@
 import getpass
 import hashlib
 import logging
+import re
+from typing import List
+
+ENGLISH_WORDS_PATH = "./english_words.txt"
+
 
 logger = logging.getLogger("password_checker")
 
+english_words = set()
+
+def get_english_words() -> set:
+    global english_words
+
+    if len(english_words) == 0:
+        with open(ENGLISH_WORDS_PATH, 'r', encoding="utf-8") as file:
+            for index, word in enumerate(file.readlines()):
+                word = word.replace('\n', '')
+                if len(word) > 4:
+                    english_words.add(word)
+
+    return english_words
+
+
+def get_words_from_string(string: str) -> List[str]:
+    return re.findall(r"\D{4,}", string.lower())
+
 
 def is_strong_password(password: str) -> bool:
-    return True
+    eng_words = get_english_words()
+
+    words = get_words_from_string(password.lower())
+
+    for word in words:
+        if word in eng_words:
+            return True
+
+    return False
 
 
 def input_and_check_password() -> bool:
@@ -51,7 +82,12 @@ def input_and_check_password() -> bool:
 
 
 if __name__ == "__main__":
-    logging.basicConfig(level=logging.DEBUG)
+    logging.basicConfig(
+        level=logging.INFO,
+        filename='stderr.txt',
+        format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
+        datefmt="%H:%M:%S"
+    )
     logger.info("Вы пытаетесь аутентифицироваться в Skillbox")
     count_number: int = 3
     logger.info(f"У вас есть {count_number} попыток")
@@ -61,5 +97,5 @@ if __name__ == "__main__":
             exit(0)
         count_number -= 1
 
-    logger.error("Пользователь трижды ввёл не правильный пароль!")
+    logger.error("Пользователь трижды ввёл неправильный пароль!")
     exit(1)
