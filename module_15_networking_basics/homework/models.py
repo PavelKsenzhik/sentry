@@ -1,4 +1,5 @@
 import datetime
+import json
 import sqlite3
 from typing import Optional, Any
 
@@ -18,6 +19,13 @@ class Room:
 
     def __getitem__(self, item: str) -> Any:
         return getattr(self, item)
+
+    def to_json(self):
+        return json.dumps(
+            self,
+            default=lambda o: o.__dict__,
+            sort_keys=True,
+            indent=4)
 
 
 class Order:
@@ -66,7 +74,7 @@ def init_db() -> None:
         )
 
 
-def add_new_room(room: Room) -> int:
+def add_new_room(room: Room) -> Room:
     with sqlite3.connect('hotel.db') as conn:
         cursor: sqlite3.Cursor = conn.cursor()
 
@@ -75,11 +83,36 @@ def add_new_room(room: Room) -> int:
             VALUES (?, ?, ?, ?)
         """
 
+        query_room = """
+            SELECT * FROM `rooms` WHERE `id`= ?
+        """
+
         cursor.execute(query, (room.floor, room.beds, room.guest_num, room.price))
         conn.commit()
 
         cursor.execute("SELECT MAX(id) FROM rooms")
-        return cursor.fetchone()[0]
+        new_room_id = cursor.fetchone()[0]
+
+        cursor.execute(query_room, (new_room_id,))
+        new_room = cursor.fetchall()
+
+        return Room(*new_room[0])
+
+
+def get_room_by_id(id: str) -> Room:
+    with sqlite3.connect('hotel.db') as conn:
+        cursor: sqlite3.Cursor = conn.cursor()
+
+        query_room = """
+            SELECT * FROM `rooms` WHERE `id`= ?
+        """
+
+        cursor.execute(query_room, (id,))
+        result = cursor.fetchall()
+        if len(result):
+            return Room(*result[0])
+        else:
+            return False
 
 
 def get_all_rooms() -> list[Room]:
@@ -92,7 +125,8 @@ def get_all_rooms() -> list[Room]:
             """
         )
 
-        return [Room(*row) for row in cursor.fetchall()]
+        rooms = cursor.fetchall()
+        return [Room(*row) for row in rooms]
 
 
 def get_rooms(check_in: datetime, check_out: datetime, guest_num: int) -> list[Room]:
@@ -125,6 +159,45 @@ def get_room_not_free(check_in: datetime, check_out: datetime, room_id: int) -> 
         return cursor.fetchone()[0] > 0
 
 
+def update_room_by_id(id, floor, beds, guest_num, price):
+    with sqlite3.connect('hotel.db') as conn:
+        cursor: sqlite3.Cursor = conn.cursor()
+
+        sql_request_update_room = """
+        UPDATE 'rooms' SET floor = ?, beds = ?, guest_num = ?, price = ? WHERE id = ?
+        """
+
+        cursor.execute(sql_request_update_room, (floor, beds, guest_num, price, id))
+        conn.commit()
+
+        query_room = """
+            SELECT * FROM `rooms` WHERE `id`= ?
+        """
+
+        cursor.execute(query_room, (id,))
+        result = cursor.fetchall()
+        if len(result):
+            return Room(*result[0])
+        else:
+            return False
+
+
+def delete_room_by_id(id) -> None:
+    with sqlite3.connect('hotel.db') as conn:
+        cursor: sqlite3.Cursor = conn.cursor()
+
+        sql_delete_request = """ 
+        DELETE FROM 'rooms'
+            WHERE id = ?
+        """
+
+        cursor.execute(sql_delete_request, (id,))
+
+        return True
+    return False
+
+
+
 def add_order(order: Order):
     with sqlite3.connect('hotel.db') as conn:
         cursor: sqlite3.Cursor = conn.cursor()
@@ -139,3 +212,6 @@ def add_order(order: Order):
 
         cursor.execute("SELECT MAX(id) FROM orders")
         return cursor.fetchone()[0]
+
+
+
