@@ -1,0 +1,38 @@
+CREATE TABLE IF NOT EXISTS 'actors' (
+    act_id INTEGER PRIMARY KEY AUTOINCREMENT,
+    act_first_name VARCHAR(50) NOT NULL,
+    act_last_name VARCHAR(50) NOT NULL,
+    act_gender VARCHAR(1) NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS 'movie' (
+    mov_id INTEGER PRIMARY KEY AUTOINCREMENT,
+    mov_title VARCHAR(50) NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS 'director' (
+    dir_id INTEGER PRIMARY KEY AUTOINCREMENT,
+    dir_first_name VARCHAR(50) NOT NULL,
+    dir_last_name VARCHAR(50) NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS 'movie_direction' (
+    dir_id INTEGER,
+    mov_id INTEGER,
+    FOREIGN KEY (dir_id) REFERENCES director (dir_id) ON DELETE CASCADE ON UPDATE CASCADE,
+    FOREIGN KEY (mov_id) REFERENCES movie (mov_id) ON DELETE CASCADE ON UPDATE CASCADE
+);
+
+CREATE TABLE IF NOT EXISTS 'oscar_awarded' (
+    award_id INTEGER PRIMARY KEY AUTOINCREMENT,
+    mov_id INTEGER,
+    FOREIGN KEY (mov_id) REFERENCES movie (mov_id) ON DELETE CASCADE ON UPDATE CASCADE
+);
+
+CREATE TABLE IF NOT EXISTS 'movie_cast' (
+    act_id INTEGER,
+    mov_id INTEGER,
+    role VARCHAR(50) NOT NULL,
+    FOREIGN KEY (act_id) REFERENCES actors (act_id) ON DELETE CASCADE ON UPDATE CASCADE,
+    FOREIGN KEY (mov_id) REFERENCES movie (mov_id) ON DELETE CASCADE ON UPDATE CASCADE
+);
