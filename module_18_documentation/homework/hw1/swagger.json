@@ -1,0 +1,158 @@
+{
+  "definitions": {
+    "Author": {
+      "properties": {
+        "first_name": {
+          "type": "string"
+        },
+        "id": {
+          "readOnly": true,
+          "type": "integer"
+        },
+        "last_name": {
+          "type": "string"
+        },
+        "middle_name": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "first_name",
+        "last_name"
+      ],
+      "type": "object"
+    },
+    "Book": {
+      "properties": {
+        "author": {
+          "type": "integer"
+        },
+        "id": {
+          "readOnly": true,
+          "type": "integer"
+        },
+        "title": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "author",
+        "title"
+      ],
+      "type": "object"
+    }
+  },
+  "info": {
+    "title": "BoockList",
+    "version": "1.0.0"
+  },
+  "paths": {
+    "/api/authors": {
+      "get": {
+        "responses": {
+          "200": {
+            "description": "authors list",
+            "schema": {
+              "items": {
+                "$ref": "#/definitions/Author"
+              },
+              "type": "array"
+            }
+          }
+        },
+        "summary": "Return all authors",
+        "tags": [
+          "authors"
+        ]
+      },
+      "post": {
+        "parameters": [
+          {
+            "in": "body",
+            "name": "new authors",
+            "schema": {
+              "$ref": "#/definitions/Author"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "descriptions": "New authors created",
+            "schema": {
+              "$ref": "#/definitions/Author"
+            }
+          }
+        },
+        "summary": "Add new author.",
+        "tags": [
+          "authors"
+        ]
+      }
+    },
+    "/api/authors/{id}": {
+      "delete": {
+        "parameters": [
+          {
+            "in": "path",
+            "name": "author id"
+          }
+        ],
+        "summary": "Delete author and his books by id.",
+        "tags": [
+          "authors"
+        ]
+      },
+      "get": {
+        "parameters": [
+          {
+            "in": "path",
+            "name": "authors id"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "authors list",
+            "schema": {
+              "items": {
+                "$ref": "#/definitions/Book"
+              },
+              "type": "array"
+            }
+          }
+        },
+        "summary": "Return all authors books",
+        "tags": [
+          "authors"
+        ]
+      },
+      "put": {
+        "parameters": [
+          {
+            "in": "path",
+            "name": "authors id"
+          },
+          {
+            "in": "body",
+            "name": "authors",
+            "schema": {
+              "$ref": "#/definitions/Author"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "descriptions": "updated author",
+            "schema": {
+              "$ref": "#/definitions/Author"
+            }
+          }
+        },
+        "summary": "Update author by id.",
+        "tags": [
+          "authors"
+        ]
+      }
+    }
+  },
+  "swagger": "2.0"
+}
